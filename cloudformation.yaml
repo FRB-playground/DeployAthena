@@ -1,0 +1,131 @@
+ #-------------------------------------------------
+
+  # Automation document to run AWS-RunPatchBaseline on target resources
+
+  #-------------------------------------------------
+
+  AutomationDocumentMamrRunPatchBaseline:
+
+    Type: AWS::SSM::Document
+
+    Properties:
+
+      DocumentType: Automation
+
+      Content:
+
+        description: >-
+
+          **Description**
+
+         
+
+          This document runs the Command document ```AWS-RunPatchBaseline``` on the specified instances.
+
+        schemaVersion: '0.3'
+
+        assumeRole: '{{ AutomationAssumeRole }}'
+
+        parameters:
+
+          AutomationAssumeRole:
+
+            type: String
+
+            description: The ARN of the Automation service role to assume.
+
+          Operation:
+
+            type: String
+
+            default: Scan
+
+            description: >-
+
+              (Required) The update or configuration to perform on the instance. The
+
+              system checks if patches specified in the patch baseline are installed on
+
+              the instance. The install operation installs patches missing from the
+
+              baseline.
+
+          RebootOption:
+
+            type: String
+
+            default: RebootIfNeeded
+
+            description: >-
+
+              (Optional) Reboot behavior after a patch Install operation. If you choose
+
+              NoReboot and patches are installed, the instance is marked as non-compliant
+
+              until a subsequent reboot and scan.
+
+          InstallOverrideList:
+
+            type: String
+
+            default: ""
+
+            description: >-
+
+              (Optional) An https URL or an Amazon S3 path-style URL to the list of patches to be installed. This patch installation list overrides the patches specified by the default patch baseline.
+
+          SnapshotId:
+
+            type: String
+
+            default: ""
+
+            description: >-
+
+              (Optional) The snapshot ID to use to retrieve a patch baseline snapshot.
+
+        mainSteps:
+
+          - name: runPatchBaseline
+
+            action: 'aws:runCommand'
+
+            timeoutSeconds: 7200
+
+            onFailure: Abort
+
+            inputs:
+
+              DocumentName: AWS-RunPatchBaseline
+
+              Targets:
+
+              - Key: 'resource-groups:Name'
+
+                Values:
+
+                  - !Ref ResourceGroupName
+
+              Parameters:
+
+                Operation: '{{ Operation }}'
+
+                RebootOption: '{{ RebootOption }}'
+
+                SnapshotId: '{{ SnapshotId }}'
+
+                InstallOverrideList: '{{ InstallOverrideList }}'
+
+              OutputS3BucketName: !Ref ExecutionLogsBucket
+
+              OutputS3KeyPrefix: 'patching/accountid={{global:ACCOUNT_ID}}/region={{global:REGION}}/executionid={{automation:EXECUTION_ID}}'
+
+              MaxConcurrency: !Ref MaximumConcurrency
+
+              MaxErrors: !Ref MaximumErrors
+
+            description: >-
+
+              This command runs the Command document ```AWS-RunPatchBaseline``` on the
+
+              specified instances.
