@@ -1,77 +1,12 @@
-variable "AutomationAssumeRole" {
-  type        = string
-  default     = ""
-  description = "AssumeRole for Automation"
+variable "region" {
+  type = string
+  description = "AWS region"
+  default = "ap-south-1"
 }
 
-variable "Operation" {
-  default     = ""
-  type        = string
-  description = "Operation field for Parameter"
+variable "database_name" {
+  type = string
+  description = "The database to which the query belongs"
+  default = ""
 }
 
-variable "RebootOption" {
-  type        = string
-  default     = ""
-  description = "RebootOption field in Parameter"
-}
-
-variable "SnapshotId" {
-  type        = string
-  default     = ""
-  description = "SnapshotId field in Parameter"
-}
-
-variable "InstallOverrideList" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "REGION" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "EXECUTION_ID" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "ACCOUNT_ID" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "document_name" {
-  type        = string
-  default     = "awsrunpatchbaseline"
-  
-}
-
-variable "ExecutionLogsBucket" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "ResourceGroupName" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "MaximumConcurrency" {
-  type        = string
-  default     = ""
-  
-}
-
-variable "MaximumErrors" {
-  type        = string
-  default     = ""
-  
-}

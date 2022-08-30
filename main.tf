@@ -1,48 +1,27 @@
 provider "aws" {
+  region=var.region
 }
-resource "aws_ssm_document" "aws_patch_base_line" {
-  name            = var.document_name
-  document_format = "YAML"
-  document_type   = "Automation"
+resource "aws_athena_named_query" "QueryNonCompliantPatch" {
+  name = "QueryNonCompliantPatch"
+  database = var.database_name
+  query    = "SELECT   FROM  aws_ complianceitem  WHERE  status='NON COMPLIANT' AND compliancetype='Patch' Details LIMIT 20;"
+}
 
-  content = <<DOC
-        schemaVersion: '0.3'
-        assumeRole: '${var.AutomationAssumeRole}'
-        parameters:
-          AutomationAssumeRole:
-            type: String
-            description: The ARN of the Automation service role to assume.
-          Operation:
-            type: String
-            default: Scan
-          RebootOption:
-            type: String
-            default: RebootIfNeeded
-          InstallOverrideList:
-            type: String
-            default: ""
-          SnapshotId:
-            type: String
-            default: ""
-        mainSteps:
-          - name: runPatchBaseline
-            action: 'aws:runCommand'
-            timeoutSeconds: 7200
-            onFailure: Abort
-            inputs:
-              DocumentName: '${var.document_name}'
-              Targets:
-              - Key: 'resource-groups:Name'
-                Values:
-                  - '${var.ResourceGroupName}'
-              Parameters:
-                Operation: '${var.Operation}'
-                RebootOption: '${var.RebootOption}'
-                SnapshotId: '${var.SnapshotId}'
-                InstallOverrideList: '${var.InstallOverrideList}'
-              OutputS3BucketName: '${var.ExecutionLogsBucket}'
-              OutputS3KeyPrefix: 'patching/accountid=${var.ACCOUNT_ID}/region=${var.REGION}/executionid=${var.EXECUTION_ID}'
-              MaxConcurrency: '${var.MaximumConcurrency}'
-              MaxErrors: '${var.MaximumErrors}'
-DOC
+
+resource "aws_athena_named_query" "QuerySSMAgentVersion" {
+  name = "QuerySSMAgentVersion"
+  database = var.database_name
+  query    = "SELECT FROM aws application WHERE name='Amazon SSM Agent' OR name-'amazon-ssm-agent LIMIT 20;"
+}
+
+resource "aws_athena_named_query" "QuerylnstanceList" {
+  name = "QuerylnstanceList"
+  database = var.database_name
+  query    = "SELECT FROM aws instanceinformation WHERE instancestatus IS NULL;"
+}
+
+resource "aws_athena_named_query" "QueryInstanceApplications" {
+  name = "QueryInstanceApplications"
+  database = var.database_name
+  query    = "SELECT name applicationtype, publisher version, instanceid FROM aws application, aws instanceinformation WHERE aws instanceinformation instancestatus IS NULL;"
 }
